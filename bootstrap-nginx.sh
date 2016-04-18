@@ -3,7 +3,7 @@
 touch /var/log/nginx/access.log
 touch /var/log/nginx/error.log
 
-chown -R www-data:www-data /var/www/html
+chown -R www-data:www-data /var/www
 
 tail --follow --retry /var/log/nginx/*.log &
 

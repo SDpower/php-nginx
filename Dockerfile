@@ -1,9 +1,10 @@
 FROM php:7-fpm
-MAINTAINER  Robin Appelman <robin@icewind.nl>
+MAINTAINER Steve Lo <info@sd.idv.tw>
 
 RUN DEBIAN_FRONTEND=noninteractive ;\
 	apt-get update && \
 	apt-get install --assume-yes \
+		git-core \
 		bzip2 \
 		nginx \
 		libaio-dev \
@@ -11,19 +12,7 @@ RUN DEBIAN_FRONTEND=noninteractive ;\
 		unzip \
 	&& rm -rf /var/lib/apt/lists/*
 
-# Oracle instantclient
-RUN wget https://github.com/icewind1991/php-nginx/raw/master/instantclient-basic-linux.x64-12.1.0.2.0.zip -O /tmp/instantclient-basic-linux.x64-12.1.0.2.0.zip \
-	&& wget https://github.com/icewind1991/php-nginx/raw/master/instantclient-sdk-linux.x64-12.1.0.2.0.zip -O /tmp/instantclient-sdk-linux.x64-12.1.0.2.0.zip \
-	&& wget https://github.com/icewind1991/php-nginx/raw/master/instantclient-sqlplus-linux.x64-12.1.0.2.0.zip -O /tmp/instantclient-sqlplus-linux.x64-12.1.0.2.0.zip \
-	&& unzip /tmp/instantclient-basic-linux.x64-12.1.0.2.0.zip -d /usr/local/ \
-	&& unzip /tmp/instantclient-sdk-linux.x64-12.1.0.2.0.zip -d /usr/local/ \
-	&& unzip /tmp/instantclient-sqlplus-linux.x64-12.1.0.2.0.zip -d /usr/local/ \
-	&& ln -s /usr/local/instantclient_12_1 /usr/local/instantclient \
-	&& ln -s /usr/local/instantclient/libclntsh.so.12.1 /usr/local/instantclient/libclntsh.so \
-	&& ln -s /usr/local/instantclient/sqlplus /usr/bin/sqlplus \
-	&& rm /tmp/instantclient-*.zip \
-	&& echo 'instantclient,/usr/local/instantclient' | pecl install oci8 \
-	&& echo "extension=oci8.so" > $PHP_INI_DIR/conf.d/30-oci8.ini
+RUN echo "Asia/Taipei" > /etc/timezone && dpkg-reconfigure -f noninteractive tzdata
 
 # php exceptions
 RUN apt-get update && apt-get install -y \
@@ -51,18 +40,16 @@ RUN apt-get update && apt-get install -y \
 	&& rm -rf /var/lib/apt/lists/* \
 	&& pecl install apcu  \
 	&& export VERSION=`php -r "echo PHP_MAJOR_VERSION.PHP_MINOR_VERSION;"` \
-    && curl -A "Docker" -o /tmp/blackfire-probe.tar.gz -D - -L -s https://blackfire.io/api/v1/releases/probe/php/linux/amd64/${VERSION} \
-    && tar zxpf /tmp/blackfire-probe.tar.gz -C /tmp \
-    && mv /tmp/blackfire-*.so `php -r "echo ini_get('extension_dir');"`/blackfire.so \
-    && echo "extension=blackfire.so\nblackfire.agent_socket=\${BLACKFIRE_PORT}" > $PHP_INI_DIR/conf.d/blackfire.ini
-    
+	&& chown -R www-data:www-data /var/www \
+	&& chmod -R 744 /var/www
+
 ADD apcu.ini opcache.ini $PHP_INI_DIR/conf.d/
 
 ADD nginx.conf nginx-app.conf /etc/nginx/
 
 
 ADD php-fpm.conf /usr/local/etc/
-ADD index.php /var/www/html/
+ADD index.php /var/www/
 
 ADD bootstrap-nginx.sh /usr/local/bin/
 

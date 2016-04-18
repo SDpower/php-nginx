@@ -3,12 +3,12 @@
 Docker image with php using nginx and php-fpm
 
 ```
-docker pull icewind1991/php-nginx
+docker pull sdpower/php-nginx
 ```
 
 ## Serving your code
 
-By default nginx is configured to server code from `/var/www/html`, you can either use a docker volume to place your code there or create a new image with the added code.
+By default nginx is configured to server code from `/var/www`, you can either use a docker volume to place your code there or create a new image with the added code.
 
 ## php extensions
 
